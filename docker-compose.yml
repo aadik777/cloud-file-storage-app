@@ -1,0 +1,31 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: cloud-storage-mysql
+    restart: always
+
+    environment:
+      MYSQL_ROOT_PASSWORD: Root@123
+      MYSQL_DATABASE: cloud_storage
+
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  backend:
+    build: ./backend
+    container_name: cloud-storage-backend
+    restart: always
+
+    ports:
+      - "8080:8080"
+
+    depends_on:
+      - mysql
+
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/cloud_storage
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: Root@123
+
+volumes:
+  mysql-data:
