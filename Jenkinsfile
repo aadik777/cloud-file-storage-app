@@ -1,1 +1,34 @@
-ipeline { agent any stages { stage('Checkout') { steps { checkout scm } } stage('Build Backend') { steps { dir('backend') { bat 'mvn clean package' } } } stage('Build Docker Image') { steps { dir('backend') { bat 'docker build -t cloud-storage-backend .' } } } stage('Deploy') { steps { bat 'docker compose up -d --build' }
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git 'YOUR_GITHUB_REPOSITORY'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                bat 'mvn clean verify'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    bat 'mvn sonar:sonar'
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+    }
+}
